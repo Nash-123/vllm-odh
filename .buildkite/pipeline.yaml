@@ -10,5 +10,6 @@ steps:
       - cd /root/ODH-vllm/vllm
       - eval "$(conda shell.bash hook)"
       - conda activate torch
+      - export LD_LIBRARY_PATH=/root/vllm_latest_changes/vllm/OpenBLAS:$LD_LIBRARY_PATH
       - bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
 

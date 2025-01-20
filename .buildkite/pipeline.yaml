@@ -6,6 +6,6 @@ steps:
       VLLM_CPU_KVCACHE_SPACE: 10
       HF_TOKEN: "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" # Replace with your actual token if required
     commands:
-      - cd /root/ODH-vllm/vllm/.buildkite
-      - bash nightly-benchmarks/scripts/run-performance-benchmarks.sh
+      - cd /root/ODH-vllm/vllm
+      - bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
 

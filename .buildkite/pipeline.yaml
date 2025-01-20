@@ -7,6 +7,7 @@ steps:
       HF_TOKEN: "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" # Replace with your actual token if required
     commands:
       - cd /root/ODH-vllm/vllm
+      - conda init
       - conda activate torch
       - bash .buildkite/nightly-benchmarks/scripts/run-performance-benchmarks.sh
 

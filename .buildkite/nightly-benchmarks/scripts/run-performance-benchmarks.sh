@@ -64,7 +64,8 @@ wait_for_server() {
   # wait for vllm server to start
   # return 1 if vllm server crashes
   timeout 1200 bash -c '
-    until curl -X POST localhost:8000/v1/completions; do
+    #until curl -X POST localhost:8000/v1/completions; do
+    until curl -k -X POST https://gpt2-kserve-gpt2.apps.ocpz-standard.t313lp27.lnxero1.boe/v1/completions; do
       sleep 1
     done' && return 0 || return 1
 }
@@ -145,11 +146,11 @@ run_latency_tests() {
     latency_args=$(json2args "$latency_params")
 
     # check if there is enough GPU to run the test
-    tp=$(echo "$latency_params" | jq -r '.tensor_parallel_size')
-    if [[ $gpu_count -lt $tp ]]; then
-      echo "Required tensor-parallel-size $tp but only $gpu_count GPU found. Skip testcase $test_name."
-      continue
-    fi
+    #tp=$(echo "$latency_params" | jq -r '.tensor_parallel_size')
+    #if [[ $gpu_count -lt $tp ]]; then
+    #  echo "Required tensor-parallel-size $tp but only $gpu_count GPU found. Skip testcase $test_name."
+    #  continue
+    #fi
 
     latency_command="python3 benchmark_latency.py \
       --output-json $RESULTS_FOLDER/${test_name}.json \
@@ -161,17 +162,16 @@ run_latency_tests() {
     # recoding benchmarking command ang GPU command
     jq_output=$(jq -n \
       --arg latency "$latency_command" \
-      --arg gpu "$gpu_type" \
+      #--arg gpu "$gpu_type" \
       '{
         latency_command: $latency,
-        gpu_type: $gpu
       }')
     echo "$jq_output" >"$RESULTS_FOLDER/$test_name.commands"
 
     # run the benchmark
     eval "$latency_command"
 
-    kill_gpu_processes
+    #kill_gpu_processes
 
   done
 }
@@ -203,13 +203,13 @@ run_throughput_tests() {
     throughput_args=$(json2args "$throughput_params")
 
     # check if there is enough GPU to run the test
-    tp=$(echo "$throughput_params" | jq -r '.tensor_parallel_size')
-    if [[ $gpu_count -lt $tp ]]; then
-      echo "Required tensor-parallel-size $tp but only $gpu_count GPU found. Skip testcase $test_name."
-      continue
-    fi
+    #tp=$(echo "$throughput_params" | jq -r '.tensor_parallel_size')
+    #if [[ $gpu_count -lt $tp ]]; then
+    #  echo "Required tensor-parallel-size $tp but only $gpu_count GPU found. Skip testcase $test_name."
+    #  continue
+    #fi
 
-    throughput_command="python3 benchmark_throughput.py \
+    throughput_command="python benchmark_throughput.py \
       --output-json $RESULTS_FOLDER/${test_name}.json \
       $throughput_args"
 
@@ -217,18 +217,16 @@ run_throughput_tests() {
     echo "Throughput command: $throughput_command"
     # recoding benchmarking command ang GPU command
     jq_output=$(jq -n \
-      --arg command "$throughput_command" \
-      --arg gpu "$gpu_type" \
+      --arg command "$throughput_command" 
       '{
         throughput_command: $command,
-        gpu_type: $gpu
       }')
     echo "$jq_output" >"$RESULTS_FOLDER/$test_name.commands"
 
     # run the benchmark
     eval "$throughput_command"
 
-    kill_gpu_processes
+    #kill_gpu_processes
 
   done
 }
@@ -265,11 +263,11 @@ run_serving_tests() {
     echo "Running over qps list $qps_list"
 
     # check if there is enough GPU to run the test
-    tp=$(echo "$server_params" | jq -r '.tensor_parallel_size')
-    if [[ $gpu_count -lt $tp ]]; then
-      echo "Required tensor-parallel-size $tp but only $gpu_count GPU found. Skip testcase $test_name."
-      continue
-    fi
+    #tp=$(echo "$server_params" | jq -r '.tensor_parallel_size')
+    #if [[ $gpu_count -lt $tp ]]; then
+    #  echo "Required tensor-parallel-size $tp but only $gpu_count GPU found. Skip testcase $test_name."
+    #  continue
+    #fi
 
     # check if server model and client model is aligned
     server_model=$(echo "$server_params" | jq -r '.model')
@@ -325,11 +323,11 @@ run_serving_tests() {
       jq_output=$(jq -n \
         --arg server "$server_command" \
         --arg client "$client_command" \
-        --arg gpu "$gpu_type" \
+       # --arg gpu "$gpu_type" \
         '{
           server_command: $server,
           client_command: $client,
-          gpu_type: $gpu
+         # gpu_type: $gpu
         }')
       echo "$jq_output" >"$RESULTS_FOLDER/${new_test_name}.commands"
 
@@ -337,13 +335,13 @@ run_serving_tests() {
 
     # clean up
     kill -9 $server_pid
-    kill_gpu_processes
+    #kill_gpu_processes
   done
 }
 
 main() {
-  check_gpus
-  check_hf_token
+ # check_gpus
+ # check_hf_token
 
   # dependencies
   (which wget && which curl) || (apt-get update && apt-get install -y wget curl)
@@ -351,7 +349,8 @@ main() {
   (which lsof) || (apt-get update && apt-get install -y lsof)
 
   # get the current IP address, required by benchmark_serving.py
-  export VLLM_HOST_IP=$(hostname -I | awk '{print $1}')
+  #export VLLM_HOST_IP=$(hostname -I | awk '{print $1}')
+  export VLLM_HOST_IP=https://gpt2-kserve-gpt2.apps.ocpz-standard.t313lp27.lnxero1.boe
   # turn of the reporting of the status of each request, to clean up the terminal output
   export VLLM_LOG_LEVEL="WARNING"
 
@@ -364,12 +363,12 @@ main() {
 
   # benchmarking
   run_serving_tests $QUICK_BENCHMARK_ROOT/tests/serving-tests.json
-  run_latency_tests $QUICK_BENCHMARK_ROOT/tests/latency-tests.json
-  run_throughput_tests $QUICK_BENCHMARK_ROOT/tests/throughput-tests.json
+  #run_latency_tests $QUICK_BENCHMARK_ROOT/tests/latency-tests.json
+  #run_throughput_tests $QUICK_BENCHMARK_ROOT/tests/throughput-tests.json
 
   # postprocess benchmarking results
-  pip install tabulate pandas
-  python3 $QUICK_BENCHMARK_ROOT/scripts/convert-results-json-to-markdown.py
+  #pip install tabulate pandas
+  python $QUICK_BENCHMARK_ROOT/scripts/convert-results-json-to-markdown.py
 
   upload_to_buildkite
 }

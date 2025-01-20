@@ -167,6 +167,9 @@ def run_vllm(
     engine_args: EngineArgs,
 ) -> float:
     from vllm import LLM, SamplingParams
+    print("INSIDE run_vllm function")
+    engine_args.dtype = 'float32'
+    print(engine_args)
     llm = LLM(**dataclasses.asdict(engine_args))
 
     # Add the requests to the engine.
@@ -223,7 +226,7 @@ async def run_vllm_async(
     disable_frontend_multiprocessing: bool = False,
 ) -> float:
     from vllm import SamplingParams
-
+    print("INSIDE run_vllm_async function")
     async with build_async_engine_client_from_engine_args(
             engine_args, disable_frontend_multiprocessing) as llm:
 
@@ -269,6 +272,7 @@ def run_hf(
     max_batch_size: int,
     trust_remote_code: bool,
 ) -> float:
+    print("INSIDE run_hf function")
     llm = AutoModelForCausalLM.from_pretrained(
         model, torch_dtype=torch.float16, trust_remote_code=trust_remote_code)
     if llm.config.model_type == "llama":
@@ -326,6 +330,7 @@ def run_mii(
     output_len: int,
 ) -> float:
     from mii import client, serve
+    print("INSIDE run_mii")
     llm = serve(model, tensor_parallel=tensor_parallel_size)
     prompts = [request.prompt for request in requests]
 

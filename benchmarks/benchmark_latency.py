@@ -23,6 +23,8 @@ def main(args: argparse.Namespace):
 
     # NOTE(woosuk): If the request cannot be processed in a single batch,
     # the engine will automatically process the request in multiple batches.
+    print("INSIDE main function")
+    engine_args.dtype = 'float32'
     llm = LLM(**dataclasses.asdict(engine_args))
 
     sampling_params = SamplingParams(

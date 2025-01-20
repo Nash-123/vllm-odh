@@ -11,7 +11,7 @@ results_folder = Path("results/")
 latency_results = []
 latency_column_mapping = {
     "test_name": "Test name",
-    "gpu_type": "GPU",
+    #"gpu_type": "GPU",
     "avg_latency": "Mean latency (ms)",
     # "P10": "P10 (s)",
     # "P25": "P25 (s)",
@@ -25,7 +25,7 @@ latency_column_mapping = {
 throughput_results = []
 throughput_results_column_mapping = {
     "test_name": "Test name",
-    "gpu_type": "GPU",
+    #"gpu_type": "GPU",
     # "num_requests": "# of req.",
     # "total_num_tokens": "Total # of tokens",
     # "elapsed_time": "Elapsed time (s)",
@@ -37,7 +37,7 @@ throughput_results_column_mapping = {
 serving_results = []
 serving_column_mapping = {
     "test_name": "Test name",
-    "gpu_type": "GPU",
+    #"gpu_type": "GPU",
     # "completed": "# of req.",
     "request_throughput": "Tput (req/s)",
     # "input_throughput": "Input Tput (tok/s)",
@@ -166,8 +166,8 @@ if __name__ == "__main__":
 
         # The GPUs sometimes come in format of "GPUTYPE\nGPUTYPE\n...",
         # we want to turn it into "8xGPUTYPE"
-        df["GPU"] = df["GPU"].apply(
-            lambda x: f"{len(x.split('\n'))}x{x.split('\n')[0]}")
+        #df["GPU"] = df["GPU"].apply(
+        #    lambda x: f"{len(x.split('\n'))}x{x.split('\n')[0]}")
 
     # get markdown tables
     latency_md_table = tabulate(latency_results,
